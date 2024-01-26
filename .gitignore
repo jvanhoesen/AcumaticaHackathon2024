@@ -1,0 +1,20 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+*.sln.DotSettings.user
+/.idea
+/.vs
+/BackUp
+/Customization
+/Hackathon2024_23_206_0006/*
+!/Hackathon2024_23_206_0006/Pages
+/Hackathon2024_23_206_0006/Pages/*
+!/Hackathon2024_23_206_0006/Pages/HK
+/Hackathon2024/bin
+/Hackathon2024/obj
+/Hackathon2024/Hackathon2024.csproj.user
+/packages
+/PrecompiledWeb
+/Snapshots
+/TemporaryAspFiles
