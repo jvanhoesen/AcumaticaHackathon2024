@@ -35,9 +35,17 @@
       <HintPath>..\Hackathon2024_23_206_0006\Bin\PX.Common.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="PX.Common.Std, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Hackathon2024_23_206_0006\Bin\PX.Common.Std.dll</HintPath>
+    </Reference>
     <Reference Include="PX.Data">
       <HintPath>..\Hackathon2024_23_206_0006\Bin\PX.Data.dll</HintPath>
       <Private>False</Private>
+    </Reference>
+    <Reference Include="PX.Data.BQL.Fluent, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Hackathon2024_23_206_0006\Bin\PX.Data.BQL.Fluent.dll</HintPath>
     </Reference>
     <Reference Include="PX.Objects">
       <HintPath>..\Hackathon2024_23_206_0006\Bin\PX.Objects.dll</HintPath>
@@ -45,6 +53,9 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Device">
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -53,7 +64,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common.cs" />
     <Compile Include="DAC\HKLocation.cs" />
+    <Compile Include="Extensions\DAC\HKSOLineExtension.cs" />
+    <Compile Include="Extensions\DAC\HKSOOrderExtension.cs" />
+    <Compile Include="Extensions\Graph\HKSOOrderEntryExtension.cs" />
     <Compile Include="Graph\HKLocationMaint.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
