@@ -87,6 +87,18 @@ namespace Hackathon2024
             }
         }
 
+        public virtual void _(Events.FieldUpdated<SOLine.orderQty> e)
+        {
+            if (e.Row == null) return;
+
+            SOLine currentLine = (SOLine)e.Row;
+
+            //Set Closest Warehouse
+            SOShippingAddress customerAddress = Base.Shipping_Address.Current;
+            int? closestWarehouse = GetClosestWarehouse(currentLine.InventoryID, currentLine.Qty ?? 0, customerAddress);
+            e.Cache.SetValueExt<HKSOLineExtension.usrClosestWarehouse>(e.Row, closestWarehouse);
+        }
+
         //FIELD UPDATED - SOLine.siteID
         public virtual void _(Events.FieldUpdated<SOLine.siteID> e)
         {
@@ -120,10 +132,11 @@ namespace Hackathon2024
         //Action -  Optimize All order lines
         public PXAction<SOOrder> optimizeCarbonFootprint;
         [PXUIField(DisplayName = "GO GREEN", MapEnableRights = PXCacheRights.Select, MapViewRights = PXCacheRights.Select)]
-        [PXButton]
+        [PXButton(CommitChanges = true)]
         public virtual IEnumerable OptimizeCarbonFootprint(PXAdapter adapter)
         {
             Dictionary<int, List<SOLine>> closestSites = new Dictionary<int, List<SOLine>>();
+            Dictionary<int, List<SOLine>> remainingSites = new Dictionary<int, List<SOLine>>();
             List<int> items = new List<int>();
 
             SOShippingAddress customerAddress = Base.Shipping_Address.Current;
@@ -158,17 +171,24 @@ namespace Hackathon2024
                     }
                 }
 
+                SOLine updatedLine;
                 //Update each line to have best warehouse
                 foreach (SOLine item in closestSites[bestRouteID])
                 {
-                    Base.Transactions.SetValueExt<HKSOLineExtension.usrClosestWarehouse>(item, bestRouteID);
-                    Base.Transactions.SetValueExt<SOLine.siteID>(item, bestRouteID);
-                }
-                closestSites.Remove(bestRouteID);
+                    item.GetExtension<HKSOLineExtension>().UsrClosestWarehouse = bestRouteID;
+                    item.GetExtension<HKSOLineExtension>().UsrOptimalRoute = OptimalRouteOpt.Optimal;
+                    item.SiteID = bestRouteID;
 
-                foreach(int warehouse in closestSites.Keys)
+                    updatedLine = Base.Transactions.Update(item);
+                }
+
+                remainingSites = new Dictionary<int, List<SOLine>>(closestSites);//closestSites;
+                foreach(int warehouse in remainingSites.Keys)
                 {
-                    closestSites[warehouse] = closestSites[warehouse].Except(closestSites[bestRouteID]).ToList();
+                    if(closestSites.ContainsKey(bestRouteID))
+                    {
+                        closestSites[warehouse] = closestSites[warehouse].Except(closestSites[bestRouteID]).ToList();
+                    }
                     if (closestSites[warehouse].Count == 0) closestSites.Remove(warehouse);
                 }
                 if (closestSites.Count == 0) calculating = false;
@@ -203,8 +223,9 @@ namespace Hackathon2024
             //Loop thorugh warehouse and get closest warehouse, set closestWarehouse
             foreach (INSiteStatus siteStatus in SelectFrom<INSiteStatus>.
                                                    Where<INSiteStatus.qtyAvail.IsGreaterEqual<P.AsInt>.
-                                                    And<INSiteStatus.inventoryID.IsEqual<P.AsInt>>>.
-                                                   View.Select(Base, Qty, inventoryItem))
+                                                    And<INSiteStatus.inventoryID.IsEqual<P.AsInt>>.
+                                                    And<INSiteStatus.siteID.IsNotEqual<P.AsInt>>>.
+                                                   View.Select(Base, Qty, inventoryItem, 209))
             {
                 decimal customerDistance = GetCustomerDistanceFromWarehouse(siteStatus.SiteID, customerAddress);
 
